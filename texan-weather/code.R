@@ -5,17 +5,19 @@ library(janitor) #clean_names
 library(ggthemes) #outros temas
 
 
-# create the object, then fill it with data from the csv
+# cria o objeto data e coloca os dados do CSV
 data <- read_csv("data-raw/3149757.csv") |>
   clean_names()
 
-# peek at the data
+# uma olhadinha nos dados
 data  |>
   glimpse()
 
+# converte os dados de fahrenheit para celsius
 data$tmin <- fahrenheit.to.celsius(data$tmin)
 data$tmax <- fahrenheit.to.celsius(data$tmax)
 
+#selecionando as colunas de interesse e filtrando o período que eu vou analisar
 data_clean <- data |> 
   select(
     date,
@@ -25,18 +27,19 @@ data_clean <- data |>
   filter(
     date > "2022-09-06")
 
-data_clean <- data_clean |> 
-  mutate(
-    new_date= date)
 
 data_clean |> 
   write_rds("data-processed/01-weather.rds")
 
 figura <- data_clean %>%
   ggplot() +
-  aes(x = factor(new_date)) +
-  geom_segment(aes(x=new_date, xend=new_date, y=tmin, yend=tmax)) +
-  geom_point( aes(x=new_date, y=tmin), color="#007f7f", size=4 ) +
-  geom_point( aes(x=new_date, y=tmax), color="orange", size=4) +
+  aes(x = factor(date)) +
+  geom_segment(aes(x=date, xend=date, y=tmin, yend=tmax)) +
+  geom_point( aes(x=date, y=tmin), color="#007f7f", size=4 ) +
+  geom_point( aes(x=date, y=tmax), color="orange", size=4) +
   theme_economist()+
   labs(title = "TÍTULO", subtitle="Registros de temperaturas mínima e máxima em cada dia que estive em Austin, TX", x = "Dia", y = "Temperatura (°C)")
+
+figura +
+  theme(axis.title.y = element_text(size = 15), axis.title.x = element_text(size = 15), plot.title = element_text(size = 20, face = "bold"))
+ggsave("figura.png", plot = figura)
